@@ -1,0 +1,90 @@
+-- Criação do Banco de Dados CREATE DATABASE sistema_vendas;
+USE sistema_vendas;
+
+-- Criação das Tabelas
+CREATE TABLE Clientes (
+cliente_id INT AUTO_INCREMENT PRIMARY KEY,
+nome VARCHAR(100) NOT NULL,
+email VARCHAR(100) UNIQUE NOT NULL,
+telefone VARCHAR(15)
+);
+
+CREATE TABLE Produtos (
+produto_id INT AUTO_INCREMENT PRIMARY KEY,
+nome VARCHAR(100) NOT NULL,
+preco DECIMAL(10, 2) NOT NULL,
+quantidade_estoque INT NOT NULL
+);
+
+CREATE TABLE Vendas (
+venda_id INT AUTO_INCREMENT PRIMARY KEY,
+cliente_id INT,
+produto_id INT,
+quantidade INT NOT NULL,
+data_venda DATE NOT NULL,
+FOREIGN KEY (cliente_id) REFERENCES Clientes(cliente_id),
+FOREIGN KEY (produto_id) REFERENCES Produtos(produto_id)
+);
+
+-- Inserção de Dados
+INSERT INTO Clientes (nome, email, telefone) VALUES
+('Ana Silva', 'ana.silva@example.com', '123456789'),
+('Bruno Costa', 'bruno.costa@example.com', '987654321'),
+('Carla Souza', 'carla.souza@example.com', '555123456');
+
+INSERT INTO Produtos (nome, preco, quantidade_estoque) VALUES
+('Produto A', 29.90, 100),
+('Produto B', 49.90, 150),
+('Produto C', 19.90, 200);
+
+INSERT INTO Vendas (cliente_id, produto_id, quantidade, data_venda) VALUES
+(1, 1, 2, '2024-09-01'),
+(2, 2, 1, '2024-09-02'),
+(3, 3, 5, '2024-09-03'),
+(1, 2, 3, '2024-09-04'),
+(2, 1, 1, '2024-09-05');
+
+-- Consultas e Relatórios
+
+-- Consulta 1: Mostrar todas as vendas realizadas, incluindo o nome do cliente e o nome do produto
+SELECT Vendas.venda_id, Clientes.nome AS nome_cliente, Produtos.nome AS nome_produto, Vendas.quantidade, Vendas.data_venda
+FROM Vendas
+JOIN Clientes ON Vendas.cliente_id = Clientes.cliente_id
+JOIN Produtos ON Vendas.produto_id = Produtos.produto_id;
+
+-- Consulta 2: Mostrar todas as compras realizadas por um cliente específico (cliente com cliente_id = 1)
+SELECT Produtos.nome AS nome_produto, Vendas.quantidade, Vendas.data_venda
+FROM Vendas
+JOIN Produtos ON Vendas.produto_id = Produtos.produto_id
+WHERE Vendas.cliente_id = 1;
+
+-- Consulta 3: Exibir o total de vendas realizadas por produto
+SELECT Produtos.nome AS nome_produto, SUM(Vendas.quantidade) AS total_vendas
+FROM Vendas
+JOIN Produtos ON Vendas.produto_id = Produtos.produto_id
+GROUP BY Produtos.nome;
+
+-- Atualização e Deleção de Dados
+
+-- Atualizar o estoque de um produto após uma venda (produto_id = 1 e quantidade vendida = 2)
+UPDATE Produtos
+SET quantidade_estoque = quantidade_estoque - 2
+WHERE produto_id = 1;
+
+-- Atualizar as informações de um cliente (alterar o telefone do cliente com cliente_id = 1)
+UPDATE Clientes
+SET telefone = '111222333'
+WHERE cliente_id = 1;
+
+-- Deletar uma venda e, se necessário, deletar o cliente associado (venda_id = 5)
+-- Deletar a venda
+DELETE FROM Vendas
+WHERE venda_id = 5;
+
+-- Opcionalmente, se o cliente não tiver mais vendas, pode-se deletar o cliente
+DELETE FROM Clientes
+WHERE cliente_id = 2 AND NOT EXISTS (
+SELECT 1 FROM Vendas WHERE cliente_id = Clientes.cliente_id
+);
+-- Criação do Banco de Dados
+CREATE DATABASE sistema_vendas;
